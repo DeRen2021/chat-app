@@ -45,7 +45,7 @@ const emit = defineEmits(['toggleMessage'])
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .message-container {
@@ -54,6 +54,7 @@ const emit = defineEmits(['toggleMessage'])
   gap: 12px;
   width: 100%;
   animation: fadeIn 0.3s ease;
+  position: relative;
 }
 
 .message-wrapper {
@@ -61,16 +62,22 @@ const emit = defineEmits(['toggleMessage'])
   max-width: calc(65% - 40px);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .message-checkbox {
-  padding-top: 10px;
+  padding-top: 12px;
   display: flex;
   align-items: center;
   position: relative;
   cursor: pointer;
   user-select: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.message-container:hover .message-checkbox {
+  opacity: 1;
 }
 
 .message-checkbox input {
@@ -83,16 +90,17 @@ const emit = defineEmits(['toggleMessage'])
 
 .checkmark {
   position: relative;
-  height: 16px;
-  width: 16px;
-  background-color: #fff;
-  border: 2px solid #ddd;
+  height: 18px;
+  width: 18px;
+  background-color: white;
+  border: 2px solid #dadce0;
   border-radius: 4px;
   transition: all 0.2s ease;
 }
 
 .message-checkbox:hover input ~ .checkmark {
   border-color: #1a73e8;
+  background-color: #f8f9fa;
 }
 
 .message-checkbox input:checked ~ .checkmark {
@@ -104,10 +112,10 @@ const emit = defineEmits(['toggleMessage'])
   content: "";
   position: absolute;
   display: none;
-  left: 4px;
+  left: 5px;
   top: 1px;
   width: 4px;
-  height: 8px;
+  height: 9px;
   border: solid white;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
@@ -118,17 +126,19 @@ const emit = defineEmits(['toggleMessage'])
 }
 
 .message {
-  padding: 12px 16px;
-  border-radius: 16px;
+  padding: 14px 18px;
+  border-radius: 18px;
   position: relative;
   transition: all 0.3s ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  line-height: 1.5;
 }
 
 .message-time {
   font-size: 12px;
-  color: #999;
+  color: #9aa0a6;
   margin-top: 4px;
+  padding: 0 4px;
 }
 
 .user {
@@ -143,6 +153,7 @@ const emit = defineEmits(['toggleMessage'])
   background-color: #1a73e8;
   color: white;
   border-bottom-right-radius: 4px;
+  box-shadow: 0 2px 6px rgba(26, 115, 232, 0.2);
 }
 
 .user .message :deep(*) {
@@ -150,13 +161,14 @@ const emit = defineEmits(['toggleMessage'])
 }
 
 .bot .message {
-  background-color: #f1f3f4;
+  background-color: #f8f9fa;
   color: #202124;
   border-bottom-left-radius: 4px;
+  border: 1px solid #e8eaed;
 }
 
 .consecutive-message {
-  margin-top: -8px;
+  margin-top: -12px;
 }
 
 .consecutive-message .message-time {
@@ -166,12 +178,15 @@ const emit = defineEmits(['toggleMessage'])
 /* 代码块样式优化 */
 .user .message :deep(pre) {
   background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
+  border-radius: 12px;
+  margin: 12px 0;
 }
 
 .bot .message :deep(pre) {
   background-color: #282a36;
-  border-radius: 8px;
+  border-radius: 12px;
+  margin: 12px 0;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .bot .message :deep(code) {
@@ -181,13 +196,22 @@ const emit = defineEmits(['toggleMessage'])
 .user .message :deep(blockquote) {
   border-left-color: rgba(255, 255, 255, 0.5);
   color: rgba(255, 255, 255, 0.9);
+  margin: 12px 0;
+}
+
+.bot .message :deep(blockquote) {
+  border-left: 3px solid #1a73e8;
+  background-color: rgba(26, 115, 232, 0.05);
+  padding: 12px 16px;
+  margin: 12px 0;
+  border-radius: 4px;
 }
 
 /* 移动端适配 */
 @media (max-width: 768px) {
   .message-list {
     padding: 16px;
-    gap: 12px;
+    gap: 16px;
   }
 
   .message-wrapper {
@@ -195,18 +219,18 @@ const emit = defineEmits(['toggleMessage'])
   }
 
   .message {
-    padding: 10px 12px;
+    padding: 12px 16px;
   }
 
   .message-checkbox {
-    padding-top: 8px;
+    padding-top: 10px;
   }
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;

@@ -54,7 +54,7 @@ onMounted(() => {
           <span></span>
           <span></span>
         </div>
-        正在思考...
+        Thinking...
       </div>
       <MessageInput 
         @send="handleSendMessage" 
@@ -71,6 +71,11 @@ onMounted(() => {
   flex-direction: column;
   background: white;
   position: relative;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(228, 228, 228, 0.6);
 }
 
 .messages-container {
@@ -79,49 +84,83 @@ onMounted(() => {
   overflow-y: auto;
   background-color: #fff;
   position: relative;
+  padding: 20px 0;
+  background-image: 
+    radial-gradient(circle at 100% 100%, rgba(26, 115, 232, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 0% 0%, rgba(26, 115, 232, 0.03) 0%, transparent 50%);
+}
+
+.messages-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.messages-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .input-container {
   flex-shrink: 0;
-  border-top: 1px solid #e4e4e4;
-  padding: 16px;
-  background-color: #fff;
+  border-top: 1px solid rgba(228, 228, 228, 0.6);
+  padding: 20px 0;
+  background-color: rgba(255, 255, 255, 0.95);
   position: relative;
-  z-index: 1;
-  box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.05);
+  z-index: 2;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(10px);
 }
 
 .error-message {
   position: absolute;
-  top: 20px;
+  top: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
-  padding: 12px 20px;
-  border-radius: 8px;
+  background-color: rgba(254, 247, 231, 0.95);
+  color: #b45309;
+  border: 1px solid #fde68a;
+  padding: 12px 24px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   animation: slideDown 0.3s ease;
+  font-size: 14px;
+  backdrop-filter: blur(8px);
+  max-width: calc(100% - 48px);
 }
 
 .error-icon {
   font-size: 18px;
+  flex-shrink: 0;
 }
 
 .close-button {
   background: none;
   border: none;
-  color: #856404;
+  color: #b45309;
   font-size: 20px;
   cursor: pointer;
   padding: 0 5px;
   opacity: 0.7;
   transition: opacity 0.2s;
+  margin-left: auto;
 }
 
 .close-button:hover {
@@ -130,19 +169,21 @@ onMounted(() => {
 
 .loading-indicator {
   position: absolute;
-  top: -30px;
+  top: -36px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: #fff;
-  color: #666;
-  padding: 6px 16px;
+  background-color: rgba(255, 255, 255, 0.95);
+  color: #5f6368;
+  padding: 8px 24px;
   border-radius: 20px;
   font-size: 14px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   animation: slideUp 0.3s ease;
+  border: 1px solid rgba(232, 234, 237, 0.8);
+  backdrop-filter: blur(8px);
 }
 
 .typing-indicator {
@@ -153,7 +194,7 @@ onMounted(() => {
 .typing-indicator span {
   width: 4px;
   height: 4px;
-  background-color: #666;
+  background-color: #5f6368;
   border-radius: 50%;
   animation: bounce 1.4s infinite ease-in-out;
 }
@@ -168,13 +209,25 @@ onMounted(() => {
 }
 
 @keyframes slideDown {
-  from { transform: translate(-50%, -20px); opacity: 0; }
-  to { transform: translate(-50%, 0); opacity: 1; }
+  from { 
+    transform: translate(-50%, -20px); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translate(-50%, 0); 
+    opacity: 1; 
+  }
 }
 
 @keyframes slideUp {
-  from { transform: translate(-50%, 20px); opacity: 0; }
-  to { transform: translate(-50%, 0); opacity: 1; }
+  from { 
+    transform: translate(-50%, 20px); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translate(-50%, 0); 
+    opacity: 1; 
+  }
 }
 
 /* 滚动条样式 */
@@ -187,11 +240,40 @@ onMounted(() => {
 }
 
 .messages-container::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: rgba(218, 220, 224, 0.6);
   border-radius: 3px;
 }
 
 .messages-container::-webkit-scrollbar-thumb:hover {
-  background: #999;
+  background: rgba(189, 193, 198, 0.8);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .chat-container {
+    border-radius: 16px;
+  }
+
+  .messages-container {
+    padding: 16px 0;
+  }
+
+  .input-container {
+    padding: 16px 0;
+  }
+
+  .error-message {
+    top: 16px;
+    padding: 10px 20px;
+    max-width: calc(100% - 32px);
+  }
+}
+
+/* 大屏幕优化 */
+@media (min-width: 1920px) {
+  .chat-container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
 }
 </style> 

@@ -25,10 +25,10 @@ const cancelEditing = () => {
 
 <template>
   <div class="settings-panel">
-    <h2>设置</h2>
+    <h2>Settings</h2>
     
     <div class="settings-section">
-      <h3>模型选择</h3>
+      <h3>Model Selection</h3>
       <ModelSelector
         v-model:modelId="chatStore.selectedModel"
         @update:modelId="chatStore.setModel"
@@ -37,10 +37,10 @@ const cancelEditing = () => {
 
     <div class="settings-section">
       <div class="section-header">
-        <h3>系统提示词</h3>
+        <h3>System Prompt</h3>
         <div class="action-buttons" v-if="!isEditing">
           <button class="edit-button" @click="startEditing">
-            编辑
+            Edit
           </button>
         </div>
       </div>
@@ -48,16 +48,16 @@ const cancelEditing = () => {
       <div v-if="isEditing" class="edit-mode">
         <textarea
           v-model="tempSystemPrompt"
-          placeholder="输入系统提示词..."
+          placeholder="Enter system prompt..."
           rows="4"
           class="system-prompt"
         ></textarea>
         <div class="button-group">
           <button class="save-button" @click="saveSystemPrompt">
-            保存
+            Save
           </button>
           <button class="cancel-button" @click="cancelEditing">
-            取消
+            Cancel
           </button>
         </div>
       </div>
@@ -66,10 +66,10 @@ const cancelEditing = () => {
           {{ chatStore.systemPrompt }}
         </div>
         <div class="prompt-placeholder" v-else>
-          未设置系统提示词
+          No system prompt set
         </div>
       </div>
-      <p class="hint">系统提示词会影响AI的行为和响应方式</p>
+      <p class="hint">System prompt affects AI's behavior and response style</p>
     </div>
   </div>
 </template>
