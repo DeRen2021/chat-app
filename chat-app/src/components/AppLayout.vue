@@ -1,7 +1,10 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, provide } from 'vue'
 
 const currentView = ref('chat') // 'chat' or 'settings'
+
+// 提供给其他组件使用
+provide('currentView', currentView)
 </script>
 
 <template>
@@ -43,7 +46,6 @@ const currentView = ref('chat') // 'chat' or 'settings'
   height: 60px;
   flex-shrink: 0;
   background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(228, 228, 228, 0.5);
   display: flex;
   align-items: center;

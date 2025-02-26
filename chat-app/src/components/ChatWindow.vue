@@ -54,7 +54,7 @@ onMounted(() => {
           <span></span>
           <span></span>
         </div>
-        Thinking...
+        {{ chatStore.isSearchingWeb ? 'searching...' : 'thinking...' }}
       </div>
       <MessageInput 
         @send="handleSendMessage" 
@@ -74,7 +74,6 @@ onMounted(() => {
   border-radius: 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   overflow: hidden;
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(228, 228, 228, 0.6);
 }
 
@@ -122,7 +121,6 @@ onMounted(() => {
   position: relative;
   z-index: 2;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
-  backdrop-filter: blur(10px);
 }
 
 .error-message {
@@ -142,7 +140,6 @@ onMounted(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   animation: slideDown 0.3s ease;
   font-size: 14px;
-  backdrop-filter: blur(8px);
   max-width: calc(100% - 48px);
 }
 
@@ -183,7 +180,6 @@ onMounted(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   animation: slideUp 0.3s ease;
   border: 1px solid rgba(232, 234, 237, 0.8);
-  backdrop-filter: blur(8px);
 }
 
 .typing-indicator {

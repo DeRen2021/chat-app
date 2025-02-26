@@ -1,7 +1,8 @@
 <script setup>
 import MessageContent from './MessageContent.vue'
+import { computed, ref } from 'vue'
 
-defineProps({
+const props = defineProps({
   messages: {
     type: Array,
     required: true
@@ -9,15 +10,44 @@ defineProps({
 })
 
 const emit = defineEmits(['toggleMessage'])
+
+// Calculate visible messages
+const visibleMessages = computed(() => {
+  return props.messages.filter(msg => !msg.hidden);
+});
+
+// Determine if message is consecutive, considering hidden messages
+const getConsecutiveMessage = (currentMessage, index) => {
+  if (index === 0) return false;
+  return visibleMessages.value[index - 1].sender === currentMessage.sender;
+}
+
+// Function to open links
+const openUrl = (url) => {
+  window.open(url, '_blank');
+}
+
+// Track the display status of source URLs for each message
+const showSourcesMap = ref({});
+
+// Toggle source URL display status
+const toggleSources = (messageId) => {
+  showSourcesMap.value[messageId] = !showSourcesMap.value[messageId];
+}
+
+// Determine if sources should be visible
+const isSourceVisible = (messageId) => {
+  return !!showSourcesMap.value[messageId]; // Default is false, only show when explicitly set to true
+}
 </script>
 
 <template>
   <div class="message-list">
-    <div v-for="(message, index) in messages" 
+    <div v-for="(message, index) in visibleMessages" 
          :key="message.id" 
          :class="['message-container', message.sender, {
            'first-message': index === 0,
-           'consecutive-message': index > 0 && messages[index - 1].sender === message.sender
+           'consecutive-message': getConsecutiveMessage(message, index)
          }]">
       <label class="message-checkbox">
         <input 
@@ -30,9 +60,46 @@ const emit = defineEmits(['toggleMessage'])
       <div class="message-wrapper">
         <div class="message">
           <MessageContent :content="message.text" />
+          
+          <!-- If this is an AI message with sources, display source-related UI -->
+          <div v-if="message.sender === 'bot' && message.searchSources && message.searchSources.length > 0" 
+               class="search-sources-container">
+            
+            <!-- Source list, only shown after clicking "View Sources" -->
+            <div v-if="isSourceVisible(message.id)">
+              <button 
+                class="sources-toggle-btn" 
+                @click="toggleSources(message.id)"
+              >
+                Hide Sources
+              </button>
+              
+              <div class="search-sources-list">
+                <div 
+                  v-for="source in message.searchSources" 
+                  :key="source.index" 
+                  class="search-source-item"
+                  @click="openUrl(source.url)"
+                >
+                  <span class="source-index">{{ source.index }}</span>
+                  <span class="source-url">{{ source.url }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- By default, only show the "View Sources" button -->
+            <div v-else>
+              <button 
+                class="show-sources-btn" 
+                @click="toggleSources(message.id)"
+              >
+                View Sources
+              </button>
+            </div>
+          </div>
         </div>
         <div class="message-time">
-          {{ new Date(message.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }}
+          {{ new Date(message.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) }}
         </div>
       </div>
     </div>
@@ -46,6 +113,8 @@ const emit = defineEmits(['toggleMessage'])
   display: flex;
   flex-direction: column;
   gap: 20px;
+  position: static;
+  overflow: visible;
 }
 
 .message-container {
@@ -55,6 +124,7 @@ const emit = defineEmits(['toggleMessage'])
   width: 100%;
   animation: fadeIn 0.3s ease;
   position: relative;
+  isolation: isolate;
 }
 
 .message-wrapper {
@@ -63,6 +133,7 @@ const emit = defineEmits(['toggleMessage'])
   display: flex;
   flex-direction: column;
   gap: 6px;
+  position: static;
 }
 
 .message-checkbox {
@@ -132,6 +203,7 @@ const emit = defineEmits(['toggleMessage'])
   transition: all 0.3s ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   line-height: 1.5;
+  overflow: hidden;
 }
 
 .message-time {
@@ -165,6 +237,17 @@ const emit = defineEmits(['toggleMessage'])
   color: #202124;
   border-bottom-left-radius: 4px;
   border: 1px solid #e8eaed;
+}
+
+.system .message {
+  background-color: #f1f8e9;
+  color: #33691e;
+  border-bottom-left-radius: 4px;
+  border: 1px solid #c5e1a5;
+}
+
+.system .message-wrapper {
+  max-width: calc(80% - 40px);
 }
 
 .consecutive-message {
@@ -236,5 +319,94 @@ const emit = defineEmits(['toggleMessage'])
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.search-sources-container {
+  margin-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding-top: 12px;
+  text-align: right;
+}
+
+.sources-toggle-btn {
+  display: inline-block;
+  background: none;
+  border: none;
+  color: #5f6368;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.sources-toggle-btn:hover {
+  background-color: #f1f3f4;
+}
+
+.show-sources-btn {
+  display: inline-block;
+  background: none;
+  border: none;
+  color: #1a73e8;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.show-sources-btn:hover {
+  background-color: #f1f3f4;
+}
+
+.search-sources-list {
+  margin-top: 10px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 8px;
+  text-align: left;
+}
+
+.search-source-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  margin-bottom: 2px;
+}
+
+.search-source-item:last-child {
+  margin-bottom: 0;
+}
+
+.search-source-item:hover {
+  background-color: #ffffff;
+}
+
+.source-index {
+  background-color: #1a73e8;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.source-url {
+  color: #1a73e8;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  flex: 1;
+  font-size: 13px;
 }
 </style> 

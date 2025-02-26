@@ -6,6 +6,8 @@ This file store the API endpoints and model configs
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL //|| 'http://localhost:8000/chat'
 const API_BASE_URL_mac = import.meta.env.VITE_API_BASE_URL_mac //|| 'http://localhost:8000/chat'
 export const VOICE_BASE_URL = import.meta.env.VITE_VOICE_BASE_URL //|| 'http://localhost:8001/transcribe/'
+export const WEB_SEARCH_BASE_URL = import.meta.env.VITE_WEB_SEARCH_BASE_URL //|| 'http://localhost:8002/search'
+export const TEST = import.meta.env.VITE_TEST || false
 
 
 
