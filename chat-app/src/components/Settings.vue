@@ -28,14 +28,17 @@ const navigateToChat = () => {
     currentView.value = 'chat'
   }
 }
-
-const toggleAutoWebSearch = () => {
-  chatStore.setAutoWebSearch(!chatStore.autoWebSearchEnabled)
-}
 </script>
 
 <template>
   <div class="settings-panel">
+    <button class="back-button" @click="navigateToChat">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="back-icon">
+        <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+      </svg>
+      Back to Chat
+    </button>
+    
     <h2>Settings</h2>
     
     <div class="settings-section">
@@ -64,11 +67,11 @@ const toggleAutoWebSearch = () => {
           class="system-prompt"
         ></textarea>
         <div class="button-group">
-          <button class="save-button" @click="saveSystemPrompt">
-            Save
-          </button>
           <button class="cancel-button" @click="cancelEditing">
             Cancel
+          </button>
+          <button class="save-button" @click="saveSystemPrompt">
+            Save
           </button>
         </div>
       </div>
@@ -82,266 +85,185 @@ const toggleAutoWebSearch = () => {
       </div>
       <p class="hint">System prompt affects AI's behavior and response style</p>
     </div>
-
-    <div class="settings-section">
-      <div class="section-header">
-        <h3>Web Search</h3>
-        <div class="toggle-switch">
-          <label class="switch">
-            <input 
-              type="checkbox" 
-              :checked="chatStore.autoWebSearchEnabled"
-              @change="toggleAutoWebSearch"
-            >
-            <span class="slider round"></span>
-          </label>
-          <span class="toggle-label">{{ chatStore.autoWebSearchEnabled ? 'Enabled' : 'Disabled' }}</span>
-        </div>
-      </div>
-      <p class="hint">When enabled, AI will automatically search the web for relevant information to provide more comprehensive answers</p>
-    </div>
   </div>
 </template>
 
 <style scoped>
 .settings-panel {
-  max-width: 800px;
+  max-width: 48rem;
   margin: 0 auto;
-  padding: 20px;
+  padding: 1.25rem;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
 }
 
 h2 {
-  color: #333;
-  margin-bottom: 30px;
-  font-size: 24px;
+  color: #343541;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
 .settings-section {
   background: white;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 1rem;
 }
 
 h3 {
-  color: #666;
-  font-size: 18px;
+  color: #343541;
+  font-size: 1.125rem;
   margin: 0;
+  font-weight: 600;
 }
 
 .action-buttons {
   display: flex;
-  gap: 10px;
+  gap: 0.625rem;
 }
 
 .edit-button, .save-button, .cancel-button {
-  padding: 6px 12px;
-  border-radius: 4px;
-  border: none;
-  font-size: 14px;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .edit-button {
-  background-color: #f8f9fa;
-  color: #007bff;
-  border: 1px solid #007bff;
+  background-color: transparent;
+  color: #1a73e8;
+  border: 1px solid #1a73e8;
 }
 
 .edit-button:hover {
-  background-color: #e2e6ea;
+  background-color: rgba(26, 115, 232, 0.05);
 }
 
 .save-button {
-  background-color: #007bff;
+  background-color: #1a73e8;
   color: white;
+  border: none;
 }
 
 .save-button:hover {
-  background-color: #0056b3;
+  background-color: #1557b0;
 }
 
 .cancel-button {
-  background-color: #f8f9fa;
-  color: #6c757d;
-  border: 1px solid #6c757d;
+  background-color: transparent;
+  color: #6e6e80;
+  border: 1px solid #6e6e80;
 }
 
 .cancel-button:hover {
-  background-color: #e2e6ea;
+  background-color: rgba(110, 110, 128, 0.05);
 }
 
 .button-group {
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 0.625rem;
+  margin-top: 0.75rem;
   justify-content: flex-end;
 }
 
 .system-prompt {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
+  padding: 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
   resize: vertical;
-  margin-bottom: 10px;
-  min-height: 100px;
+  margin-bottom: 0.625rem;
+  min-height: 6.25rem;
+  font-family: inherit;
 }
 
 .system-prompt:focus {
-  border-color: #007bff;
+  border-color: #1a73e8;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.25);
 }
 
 .view-mode {
-  background-color: #f8f9fa;
-  border-radius: 4px;
-  padding: 10px;
-  min-height: 60px;
+  background-color: #f7f7f8;
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  min-height: 3.75rem;
 }
 
 .prompt-display {
   white-space: pre-wrap;
   word-break: break-word;
-  color: #333;
+  color: #343541;
+  font-size: 0.875rem;
 }
 
 .prompt-placeholder {
-  color: #6c757d;
+  color: #6e6e80;
   font-style: italic;
+  font-size: 0.875rem;
 }
 
 .hint {
-  color: #666;
-  font-size: 12px;
-  margin-top: 10px;
+  color: #6e6e80;
+  font-size: 0.75rem;
+  margin-top: 0.625rem;
 }
 
 .edit-mode {
-  margin-top: 10px;
+  margin-top: 0.625rem;
 }
 
-.search-container {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.search-input {
-  flex: 1;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.search-input:focus {
-  border-color: #007bff;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
-}
-
-.search-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 10px 15px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  font-size: 14px;
-  white-space: nowrap;
-}
-
-.search-button:hover {
-  background-color: #0056b3;
-}
-
-.search-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-.search-error {
-  color: #dc3545;
-  font-size: 14px;
-  margin-top: 8px;
-}
-
-.toggle-switch {
+/* 返回聊天的按钮 */
+.back-button {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 24px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  color: #6e6e80;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: .4s;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
 }
 
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: .4s;
+.back-button:hover {
+  color: #1a73e8;
 }
 
-input:checked + .slider {
-  background-color: #007bff;
+.back-icon {
+  width: 1rem;
+  height: 1rem;
 }
 
-input:focus + .slider {
-  box-shadow: 0 0 1px #007bff;
-}
-
-input:checked + .slider:before {
-  transform: translateX(26px);
-}
-
-.slider.round {
-  border-radius: 24px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
-}
-
-.toggle-label {
-  font-size: 14px;
-  color: #666;
+/* 响应式样式 */
+@media (max-width: 768px) {
+  .settings-panel {
+    padding: 1rem 0.75rem;
+  }
+  
+  .settings-section {
+    padding: 1rem;
+  }
+  
+  h2 {
+    font-size: 1.25rem;
+  }
+  
+  h3 {
+    font-size: 1rem;
+  }
 }
 </style> 

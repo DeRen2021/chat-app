@@ -1,7 +1,8 @@
 <script setup>
-import { ref, nextTick, onUnmounted } from 'vue'
+import { ref, nextTick, onUnmounted, computed } from 'vue'
 import { AudioRecorder } from '../utils/audioRecorder'
 import { transcribeAudio } from '../api/speechService'
+import { useChatStore } from '../stores/chat'
 
 const props = defineProps({
   disabled: {
@@ -15,6 +16,10 @@ const messageText = ref('')
 const textareaRef = ref(null)
 const isRecording = ref(false)
 const recorder = new AudioRecorder()
+const chatStore = useChatStore()
+
+// 计算属性用于显示当前网页搜索状态
+const webSearchEnabled = computed(() => chatStore.autoWebSearchEnabled)
 
 const adjustTextareaHeight = async () => {
   await nextTick()
@@ -43,6 +48,11 @@ const sendMessage = () => {
     messageText.value = ''
     adjustTextareaHeight()
   }
+}
+
+// 添加切换网页搜索功能的方法
+const toggleWebSearch = () => {
+  chatStore.setAutoWebSearch(!chatStore.autoWebSearchEnabled)
 }
 
 const toggleRecording = async () => {
@@ -80,12 +90,25 @@ onUnmounted(() => {
       ref="textareaRef"
       v-model="messageText"
       :disabled="disabled"
-      placeholder="Type a message, press Enter to send, Shift+Enter for new line..."
+      placeholder="Type message, press Enter to send, Shift+Enter for new line..."
       @input="handleInput"
       @keydown="handleKeydown"
       rows="1"
     ></textarea>
     <div class="button-group">
+      <!-- 添加网页搜索切换按钮 -->
+      <button 
+        class="web-search-button" 
+        :class="{ active: webSearchEnabled }"
+        @click="toggleWebSearch"
+        :disabled="disabled"
+        type="button"
+        :title="webSearchEnabled ? 'Web Search Enabled' : 'Web Search Disabled'"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="web-search-icon">
+          <path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z" clip-rule="evenodd" />
+        </svg>
+      </button>
       <button 
         class="record-button" 
         :class="{ recording: isRecording }"
@@ -115,19 +138,21 @@ onUnmounted(() => {
 <style scoped>
 .message-input {
   display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  background-color: white;
-  border-radius: 16px;
-  padding: 12px 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  border: 1px solid #e0e0e0;
-  margin: 0 16px;
+  align-items: center;
+  gap: 8px;
+  background-color: #fff;
+  border-radius: 0.75rem;
+  padding: 8px 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 48rem;
+  margin: 0 auto;
+  position: relative;
+  transition: border-color 0.2s;
 }
 
 .message-input:focus-within {
-  box-shadow: 0 4px 16px rgba(26, 115, 232, 0.15);
   border-color: #1a73e8;
 }
 
@@ -137,22 +162,16 @@ textarea {
   max-height: 200px;
   padding: 8px 12px;
   border: none;
-  border-radius: 12px;
-  background-color: #f8f9fa;
-  font-size: 15px;
+  background-color: transparent;
+  font-size: 1rem;
   line-height: 1.5;
   resize: none;
   outline: none;
   font-family: inherit;
-  transition: background-color 0.3s ease;
-}
-
-textarea:focus {
-  background-color: white;
 }
 
 textarea::placeholder {
-  color: #9aa0a6;
+  color: #6e6e80;
 }
 
 textarea:disabled {
@@ -162,21 +181,22 @@ textarea:disabled {
 
 .button-group {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
 }
 
 .record-button,
-.send-button {
+.send-button,
+.web-search-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border: none;
-  border-radius: 50%;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s;
   padding: 0;
   flex-shrink: 0;
 }
@@ -185,6 +205,35 @@ textarea:disabled {
   background-color: #f8f9fa;
   color: #5f6368;
   border: 1px solid #dadce0;
+}
+
+.web-search-button {
+  background-color: #f8f9fa;
+  color: #5f6368;
+  border: 1px solid #dadce0;
+}
+
+.web-search-button.active {
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+}
+
+.web-search-button:hover:not(:disabled) {
+  background-color: #f1f3f4;
+  border-color: #d2d5d9;
+  transform: translateY(-1px);
+}
+
+.web-search-button.active:hover:not(:disabled) {
+  background-color: #1557b0;
+  border: none;
+}
+
+.web-search-icon {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s ease;
 }
 
 .record-button:hover:not(:disabled) {
@@ -201,20 +250,17 @@ textarea:disabled {
 }
 
 .send-button {
-  background-color: #1a73e8;
-  color: white;
-  transform: scale(1);
-  box-shadow: 0 2px 6px rgba(26, 115, 232, 0.3);
+  background-color: transparent;
+  color: #1a73e8;
 }
 
 .send-button:hover:not(:disabled) {
-  background-color: #1557b0;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(26, 115, 232, 0.4);
+  background-color: rgba(26, 115, 232, 0.1);
 }
 
 .send-button:disabled,
-.record-button:disabled {
+.record-button:disabled,
+.web-search-button:disabled {
   background-color: #f1f3f4;
   color: #9aa0a6;
   cursor: not-allowed;
@@ -224,14 +270,16 @@ textarea:disabled {
 }
 
 .send-icon,
-.mic-icon {
+.mic-icon,
+.web-search-icon {
   width: 20px;
   height: 20px;
   transition: transform 0.2s ease;
 }
 
 .record-button:hover:not(:disabled) .mic-icon,
-.send-button:hover:not(:disabled) .send-icon {
+.send-button:hover:not(:disabled) .send-icon,
+.web-search-button:hover:not(:disabled) .web-search-icon {
   transform: scale(1.1);
 }
 
@@ -248,13 +296,15 @@ textarea:disabled {
   }
 
   .record-button,
-  .send-button {
+  .send-button,
+  .web-search-button {
     width: 36px;
     height: 36px;
   }
 
   .send-icon,
-  .mic-icon {
+  .mic-icon,
+  .web-search-icon {
     width: 18px;
     height: 18px;
   }
@@ -272,6 +322,17 @@ textarea:disabled {
   100% {
     transform: scale(1);
     box-shadow: 0 0 0 0 rgba(217, 48, 37, 0);
+  }
+}
+
+/* 减少整体input容器的内边距 */
+@media screen and (min-width: 1280px) {
+  .input-container {
+    padding: 0.5rem;
+  }
+  
+  .message-input {
+    margin: 0 4px;
   }
 }
 </style> 

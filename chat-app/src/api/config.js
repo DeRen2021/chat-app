@@ -24,21 +24,17 @@ export const AVAILABLE_MODELS = [
   {
     id: 'deepseek-r1-distill-qwen-7b',
     name: 'Deepseek R1 Distill Qwen 7B',
-    description: 'Most powerful GPT model'
   },
   {
     id: 'gpt-4o',
     name: 'GPT-4o',
-    description: 'Most powerful GPT model'
   },
   {
     id: 'claude-3-5-sonnet-20241022',
     name: 'claude-3-5-sonnet-20241022',
-    description: 'Fast and economical choice'
   },
   {
     id: 'deepseek-chat',
     name: 'Deepseek Chat',
-    description: 'High-performance model'
   }
 ] 

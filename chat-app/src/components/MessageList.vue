@@ -22,6 +22,25 @@ const getConsecutiveMessage = (currentMessage, index) => {
   return visibleMessages.value[index - 1].sender === currentMessage.sender;
 }
 
+// 格式化时间显示
+const formatMessageTime = (timestamp) => {
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+
+// 格式化完整日期时间
+const formatFullDateTime = (timestamp) => {
+  const date = new Date(timestamp);
+  return date.toLocaleString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric',
+    hour: '2-digit', 
+    minute: '2-digit',
+    second: '2-digit'
+  });
+}
+
 // Function to open links
 const openUrl = (url) => {
   window.open(url, '_blank');
@@ -38,6 +57,19 @@ const toggleSources = (messageId) => {
 // Determine if sources should be visible
 const isSourceVisible = (messageId) => {
   return !!showSourcesMap.value[messageId]; // Default is false, only show when explicitly set to true
+}
+
+// 显示/隐藏完整时间戳的状态
+const showFullTimeMap = ref({});
+
+// 切换显示完整时间戳
+const toggleFullTime = (messageId) => {
+  showFullTimeMap.value[messageId] = !showFullTimeMap.value[messageId];
+}
+
+// 判断是否显示完整时间戳
+const isFullTimeVisible = (messageId) => {
+  return !!showFullTimeMap.value[messageId];
 }
 </script>
 
@@ -98,8 +130,13 @@ const isSourceVisible = (messageId) => {
             </div>
           </div>
         </div>
-        <div class="message-time">
-          {{ new Date(message.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) }}
+        <div class="message-time" @click="toggleFullTime(message.id)">
+          <span v-if="isFullTimeVisible(message.id)" class="full-datetime">
+            {{ formatFullDateTime(message.timestamp) }}
+          </span>
+          <span v-else class="short-time">
+            {{ formatMessageTime(message.timestamp) }}
+          </span>
         </div>
       </div>
     </div>
@@ -108,47 +145,98 @@ const isSourceVisible = (messageId) => {
 
 <style scoped>
 .message-list {
-  min-height: 0;
-  padding: 20px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  position: static;
-  overflow: visible;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 100%;
 }
 
 .message-container {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  width: 100%;
+  padding: 0.75rem 1rem;
   animation: fadeIn 0.3s ease;
   position: relative;
   isolation: isolate;
+  border-bottom: none;
+  gap: 0.75rem;
+  transition: background-color 0.2s ease;
+  border-radius: 0.5rem;
+  margin: 0 0.5rem;
+  width: auto; /* Allow container to size to content */
+  max-width: 75%; /* Limit width */
+}
+
+.message-container:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.message-container.user {
+  background-color: rgba(236, 242, 251, 0.8);
+  border-right: 3px solid #1a73e8;
+  flex-direction: row-reverse; /* Reverse order for user messages */
+  align-self: flex-end; /* Align the container to the right edge */
+  margin-left: auto; /* Push to right */
+}
+
+.message-container.bot {
+  background-color: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border-left: 3px solid #34a853;
+  align-self: flex-start; /* Align the container to the left edge */
+}
+
+.message-container.system {
+  background-color: #f8f9fa;
+  border-left: 3px solid #fbbc05;
+  align-self: center; /* Center system messages */
+  max-width: 90%;
+  text-align: center;
+}
+
+.message-container.user:hover {
+  background-color: rgba(230, 238, 250, 0.9);
+}
+
+.message-container.bot:hover {
+  background-color: rgba(248, 249, 250, 0.8);
 }
 
 .message-wrapper {
   flex: 1;
-  max-width: calc(65% - 40px);
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  position: static;
+  gap: 0.5rem;
 }
 
-.message-checkbox {
-  padding-top: 12px;
-  display: flex;
-  align-items: center;
+.message {
+  padding: 0;
   position: relative;
+  line-height: 1.6;
+  overflow: hidden;
+  word-wrap: break-word;
+  hyphens: auto;
+  background-color: transparent;
+  font-size: 0.95rem;
+}
+
+/* Checkbox styles */
+.message-checkbox {
+  display: block;
+  position: relative;
+  width: 1.25rem;
+  height: 1.25rem;
   cursor: pointer;
-  user-select: none;
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  margin-top: 0.25rem;
+  opacity: 0.3;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
 }
 
 .message-container:hover .message-checkbox {
-  opacity: 1;
+  opacity: 0.7;
 }
 
 .message-checkbox input {
@@ -160,18 +248,19 @@ const isSourceVisible = (messageId) => {
 }
 
 .checkmark {
-  position: relative;
-  height: 18px;
-  width: 18px;
-  background-color: white;
-  border: 2px solid #dadce0;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1.25rem;
+  width: 1.25rem;
+  background-color: #eee;
+  border-radius: 0.25rem;
+  transition: all 0.2s;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .message-checkbox:hover input ~ .checkmark {
-  border-color: #1a73e8;
-  background-color: #f8f9fa;
+  background-color: #ddd;
 }
 
 .message-checkbox input:checked ~ .checkmark {
@@ -183,200 +272,209 @@ const isSourceVisible = (messageId) => {
   content: "";
   position: absolute;
   display: none;
-  left: 5px;
-  top: 1px;
-  width: 4px;
-  height: 9px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
 }
 
 .message-checkbox input:checked ~ .checkmark:after {
   display: block;
 }
 
-.message {
-  padding: 14px 18px;
-  border-radius: 18px;
-  position: relative;
-  transition: all 0.3s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  line-height: 1.5;
-  overflow: hidden;
+.message-checkbox .checkmark:after {
+  left: 0.4375rem;
+  top: 0.1875rem;
+  width: 0.25rem;
+  height: 0.625rem;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
+/* Time display */
 .message-time {
-  font-size: 12px;
-  color: #9aa0a6;
-  margin-top: 4px;
-  padding: 0 4px;
+  font-size: 0.75rem;
+  color: #6e6e80;
+  padding: 0;
+  text-align: right;
+  font-style: italic;
+  cursor: pointer;
+  transition: color 0.2s ease;
 }
 
-.user {
-  flex-direction: row-reverse;
+.message-time:hover {
+  color: #1a73e8;
 }
 
-.user .message-wrapper {
-  align-items: flex-end;
+.user .message-checkbox {
+  order: 2; /* Move to the right in flex-direction: row-reverse */
+}
+
+.full-datetime {
+  display: inline-block;
+  background-color: rgba(26, 115, 232, 0.08);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.75rem;
+  color: #1a73e8;
+  font-style: normal;
+}
+
+/* 搜索源样式调整 */
+.search-sources-container {
+  margin-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 0.75rem;
+}
+
+.show-sources-btn,
+.sources-toggle-btn {
+  background: none;
+  border: 1px solid #1a73e8;
+  color: #1a73e8;
+  font-size: 0.8125rem;
+  padding: 0.375rem 0.75rem;
+  cursor: pointer;
+  border-radius: 1rem;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.show-sources-btn:hover,
+.sources-toggle-btn:hover {
+  background-color: rgba(26, 115, 232, 0.08);
+  transform: translateY(-1px);
+}
+
+/* 媒体查询适配 */
+@media (max-width: 768px) {
+  .message-container {
+    padding: 0.875rem 0.75rem;
+    gap: 0.5rem;
+  }
+  
+  .message-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  
+  .checkmark {
+    height: 1rem;
+    width: 1rem;
+  }
+  
+  .message-checkbox .checkmark:after {
+    left: 0.375rem;
+    top: 0.125rem;
+    width: 0.1875rem;
+    height: 0.5rem;
+  }
+}
+
+/* 确保代码块正确显示 */
+.bot .message :deep(pre) {
+  background-color: #1e1e1e;
+  border-radius: 0.5rem;
+  margin: 0.875rem 0;
+  border: none;
+  overflow-x: auto;
+  max-width: 100%;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bot .message :deep(code) {
+  color: #e9e9e9;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
 }
 
 .user .message {
-  background-color: #1a73e8;
-  color: white;
-  border-bottom-right-radius: 4px;
-  box-shadow: 0 2px 6px rgba(26, 115, 232, 0.2);
+  text-align: left; /* Keep text aligned left for readability */
+  color: #202124;
 }
 
 .user .message :deep(*) {
-  color: white;
+  color: inherit;
 }
 
-.bot .message {
-  background-color: #f8f9fa;
-  color: #202124;
-  border-bottom-left-radius: 4px;
-  border: 1px solid #e8eaed;
+/* 修改用户消息样式 */
+.user {
+  justify-content: flex-end;
 }
 
+.user .message-wrapper {
+  margin-right: 0;
+  margin-left: 0;
+  max-width: 90%;
+}
+
+/* 修改AI消息样式 */
+.bot .message-wrapper {
+  max-width: 90%;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+/* 系统消息样式 */
 .system .message {
-  background-color: #f1f8e9;
-  color: #33691e;
-  border-bottom-left-radius: 4px;
-  border: 1px solid #c5e1a5;
-}
-
-.system .message-wrapper {
-  max-width: calc(80% - 40px);
+  background-color: transparent;
+  color: #5f6368;
+  border-radius: 0.25rem;
+  padding: 0;
 }
 
 .consecutive-message {
-  margin-top: -12px;
+  margin-top: 0;
+  padding-top: 0.5rem;
+  border-top: none;
 }
 
 .consecutive-message .message-time {
   display: none;
 }
 
-/* 代码块样式优化 */
+/* Code block styles optimization */
 .user .message :deep(pre) {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  margin: 12px 0;
+  background-color: #1e1e1e;
+  border-radius: 0.5rem;
+  margin: 0.875rem 0;
+  overflow-x: auto;
+  max-width: 100%;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
 }
 
-.bot .message :deep(pre) {
-  background-color: #282a36;
-  border-radius: 12px;
-  margin: 12px 0;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+.user .message :deep(code) {
+  color: #e9e9e9;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
 }
 
-.bot .message :deep(code) {
-  color: #f8f8f2;
-}
-
-.user .message :deep(blockquote) {
-  border-left-color: rgba(255, 255, 255, 0.5);
-  color: rgba(255, 255, 255, 0.9);
-  margin: 12px 0;
-}
-
+.user .message :deep(blockquote),
 .bot .message :deep(blockquote) {
   border-left: 3px solid #1a73e8;
   background-color: rgba(26, 115, 232, 0.05);
-  padding: 12px 16px;
-  margin: 12px 0;
-  border-radius: 4px;
-}
-
-/* 移动端适配 */
-@media (max-width: 768px) {
-  .message-list {
-    padding: 16px;
-    gap: 16px;
-  }
-
-  .message-wrapper {
-    max-width: calc(80% - 30px);
-  }
-
-  .message {
-    padding: 12px 16px;
-  }
-
-  .message-checkbox {
-    padding-top: 10px;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.search-sources-container {
-  margin-top: 10px;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-  padding-top: 12px;
-  text-align: right;
-}
-
-.sources-toggle-btn {
-  display: inline-block;
-  background: none;
-  border: none;
-  color: #5f6368;
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.sources-toggle-btn:hover {
-  background-color: #f1f3f4;
-}
-
-.show-sources-btn {
-  display: inline-block;
-  background: none;
-  border: none;
-  color: #1a73e8;
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.show-sources-btn:hover {
-  background-color: #f1f3f4;
+  padding: 0.75rem 1rem;
+  margin: 0.875rem 0;
+  border-radius: 0.25rem;
 }
 
 .search-sources-list {
-  margin-top: 10px;
+  margin-top: 0.75rem;
   background-color: #f8f9fa;
-  border-radius: 12px;
-  padding: 8px;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
   text-align: left;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .search-source-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px;
+  gap: 0.625rem;
+  padding: 0.625rem;
   cursor: pointer;
-  border-radius: 8px;
-  transition: background-color 0.2s;
-  margin-bottom: 2px;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  margin-bottom: 0.25rem;
+  min-height: 2.5rem;
+  border: 1px solid transparent;
 }
 
 .search-source-item:last-child {
@@ -385,20 +483,24 @@ const isSourceVisible = (messageId) => {
 
 .search-source-item:hover {
   background-color: #ffffff;
+  border-color: rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .source-index {
   background-color: #1a73e8;
   color: white;
-  width: 24px;
-  height: 24px;
+  width: 1.75rem;
+  height: 1.75rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: bold;
   flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .source-url {
@@ -407,6 +509,207 @@ const isSourceVisible = (messageId) => {
   overflow: hidden;
   white-space: nowrap;
   flex: 1;
-  font-size: 13px;
+  font-size: 0.875rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(0.625rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design - improved breakpoints */
+/* Extra small devices (phones, 600px and down) */
+@media (max-width: 600px) {
+  .message-list {
+    padding: 0;
+    gap: 0.5rem;
+  }
+
+  .message-container {
+    padding: 0.75rem 0.625rem;
+    margin: 0 0.25rem;
+  }
+
+  .message-wrapper {
+    max-width: 85%;
+  }
+
+  .user .message-wrapper {
+    max-width: 85%;
+  }
+
+  .system .message-wrapper {
+    max-width: 90%;
+  }
+
+  .consecutive-message {
+    margin-top: 0;
+  }
+
+  .source-url {
+    max-width: 12.5rem;
+  }
+}
+
+/* Small to Medium devices (600px to 992px) */
+@media (min-width: 601px) and (max-width: 992px) {
+  .message-wrapper {
+    max-width: 85%;
+  }
+
+  .user .message-wrapper {
+    max-width: 85%;
+  }
+  
+  .consecutive-message {
+    margin-top: 0;
+  }
+
+  .source-url {
+    max-width: 18.75rem;
+  }
+}
+
+/* Larger screens */
+@media (min-width: 1200px) {
+  .message-list {
+    max-width: 100%;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .message-wrapper {
+    max-width: 90%;
+  }
+
+  .user .message-wrapper {
+    max-width: 90%;
+  }
+
+  .system .message-wrapper {
+    max-width: 90%;
+  }
+}
+
+/* Mac优化 - 针对问题截图中的情况 */
+@media screen and (min-width: 1280px) and (min-height: 800px) and (-webkit-min-device-pixel-ratio: 2),
+       screen and (min-width: 1280px) {
+  .message-list {
+    max-width: 100%;
+    width: 100%;
+    padding: 0;
+    gap: 0.75rem;
+  }
+  
+  .message-wrapper {
+    max-width: 95%;
+  }
+  
+  .user .message-wrapper {
+    max-width: 95%;
+  }
+  
+  .system .message-wrapper {
+    max-width: 95%;
+  }
+  
+  .message {
+    line-height: 1.6;
+  }
+}
+
+/* Extra large screens */
+@media (min-width: 1800px) {
+  .message-list {
+    max-width: 100%;
+    width: 100%;
+    padding: 0;
+    gap: 0.875rem;
+  }
+
+  .message-time {
+    font-size: 0.8125rem;
+  }
+
+  .source-url {
+    font-size: 0.9375rem;
+  }
+}
+
+/* 超大显示器 */
+@media screen and (min-width: 2560px) and (min-height: 1440px) {
+  .message-list {
+    max-width: 100%;
+    width: 100%;
+    padding: 0;
+    gap: 1rem;
+  }
+  
+  .message-wrapper {
+    max-width: 95%;
+  }
+  
+  .user .message-wrapper {
+    max-width: 95%;
+  }
+  
+  .system .message-wrapper {
+    max-width: 95%;
+  }
+
+  .message {
+    font-size: 1rem;
+  }
+}
+
+/* Improve touch targets for mobile */
+@media (pointer: coarse) {
+  .show-sources-btn,
+  .sources-toggle-btn {
+    min-height: 2.5rem;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  .search-source-item {
+    min-height: 3rem;
+    padding: 0.75rem;
+  }
+  
+  .source-index {
+    width: 1.875rem;
+    height: 1.875rem;
+  }
+  
+  .message-checkbox {
+    opacity: 0.7;
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  
+  .checkmark {
+    height: 1.5rem;
+    width: 1.5rem;
+  }
+  
+  .message-checkbox .checkmark:after {
+    left: 0.5rem;
+    top: 0.25rem;
+    width: 0.25rem;
+    height: 0.625rem;
+  }
+}
+
+/* Fix for Safari spacing issues */
+@supports (-webkit-touch-callout: none) {
+  .message {
+    word-break: break-word;
+  }
 }
 </style> 
